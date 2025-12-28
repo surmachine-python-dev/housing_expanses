@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyHomeApp Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .chart-container { position: relative; height: 400px; width: 100%; margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>MyHomeApp Dashboard</h1>
+        
+        <div class="chart-container">
+            <canvas id="consumptionChart"></canvas>
+        </div>
+
+        <h2>Readings History</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>User</th>
+                    <th>Utility</th>
+                    <th>Value</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reading in readings %}
+                <tr>
+                    <td>{{ reading.date }}</td>
+                    <td>{{ reading.user.username }}</td>
+                    <td>{{ reading.utility_type }}</td>
+                    <td>{{ reading.reading_value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('consumptionChart').getContext('2d');
+        const chartData = {
+            labels: {{ chart_labels|safe }},
+            datasets: {{ chart_datasets|safe }}
+        };
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
