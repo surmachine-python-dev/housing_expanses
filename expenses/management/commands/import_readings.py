@@ -21,10 +21,11 @@ class Command(BaseCommand):
             return
 
         # Create users
-        user_default, _ = User.objects.get_or_create(username='Default')
+        user_michal, _ = User.objects.get_or_create(username='Michał')
         user_ania, _ = User.objects.get_or_create(username='Ania')
 
         count = 0
+
         for index, row in df.iterrows():
             date_val = row['Data:']
             if pd.isnull(date_val):
@@ -40,18 +41,19 @@ class Command(BaseCommand):
                 except:
                     continue
 
-            # Default User Readings
-            readings_default = [
+            # Michał User Readings
+            readings_michal = [
                 ('Cold Water', row.get('Woda zimna:')),
                 ('Hot Water', row.get('Woda ciepła:')),
                 ('Energy', row.get('Prąd:')),
                 ('Heating', row.get('Ogrzewanie:')),
             ]
 
-            for utility, value in readings_default:
+            for utility, value in readings_michal:
                 if pd.notnull(value):
                     MeterReading.objects.get_or_create(
-                        user=user_default,
+                        user=user_michal,
+
                         date=date,
                         utility_type=utility,
                         defaults={'reading_value': value}

@@ -10,61 +10,190 @@
         .container { max-width: 1200px; margin: 0 auto; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #f2f2f2; }
+        th { background-color: #f2f2f2; cursor: pointer; }
+        th:hover { background-color: #e0e0e0; }
         .chart-container { position: relative; height: 400px; width: 100%; margin-bottom: 40px; }
+        .btn { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
+        .btn:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>MyHomeApp Dashboard</h1>
         
-        <div class="chart-container">
-            <canvas id="consumptionChart"></canvas>
+        <button class="btn" onclick="toggleChart()">Show/Hide Charts</button>
+
+        <div id="chartsWrapper" style="display: none;">
+            <h3>Water Consumption</h3>
+            <div class="chart-container">
+                <canvas id="waterChart"></canvas>
+            </div>
+
+            <h3>Energy Consumption</h3>
+            <div class="chart-container">
+                <canvas id="energyChart"></canvas>
+            </div>
+
+            <h3>Heating Consumption</h3>
+            <div class="chart-container">
+                <canvas id="heatingChart"></canvas>
+            </div>
         </div>
 
         <h2>Readings History</h2>
-        <table>
+        <table id="readingsTable">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>User</th>
-                    <th>Utility</th>
-                    <th>Value</th>
+                    <th onclick="sortTable(0)">Date</th>
+                    <th onclick="sortTable(1)">User</th>
+                    <th onclick="sortTable(2)">Utility</th>
+                    <th onclick="sortTable(3)">Value</th>
                 </tr>
             </thead>
             <tbody>
                 {% for reading in readings %}
                 <tr>
-                    <td>{{ reading.date }}</td>
+                    <td>{{ reading.date|date:"d.m.Y" }}</td>
                     <td>{{ reading.user.username }}</td>
                     <td>{{ reading.utility_type }}</td>
                     <td>{{ reading.reading_value }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
+
         </table>
     </div>
 
     <script>
-        const ctx = document.getElementById('consumptionChart').getContext('2d');
-        const chartData = {
-            labels: {{ chart_labels|safe }},
-            datasets: {{ chart_datasets|safe }}
+        function toggleChart() {
+            const container = document.getElementById('chartsWrapper');
+            if (container.style.display === 'none' || container.style.display === '') {
+                container.style.display = 'block';
+            } else {
+                container.style.display = 'none';
+            }
+        }
+
+        function sortTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("readingsTable");
+            switching = true;
+            dir = "asc"; 
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    
+                    let xVal = x.innerHTML.toLowerCase();
+                    let yVal = y.innerHTML.toLowerCase();
+                    
+                    // Check if numeric
+                    if (!isNaN(parseFloat(xVal)) && isFinite(xVal) && !isNaN(parseFloat(yVal)) && isFinite(yVal)) {
+                        xVal = parseFloat(xVal);
+                        yVal = parseFloat(yVal);
+                    }
+
+                    if (dir == "asc") {
+                        if (xVal > yVal) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (xVal < yVal) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount ++;      
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
         };
-        
-        new Chart(ctx, {
-            type: 'line',
-            data: chartData,
+
+        const labels = {{ chart_labels|safe }};
+
+        // Water Chart
+        new Chart(document.getElementById('waterChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: {{ datasets_water|safe }}
+            },
+            options: commonOptions
+        });
+
+        // Energy Chart
+        new Chart(document.getElementById('energyChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: {{ datasets_energy|safe }}
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 scales: {
                     y: {
-                        beginAtZero: false
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value, index, values) {
+                                return value + ' zł';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + ' zł';
+                                }
+                                return label;
+                            }
+                        }
                     }
                 }
             }
         });
+
+
+        // Heating Chart
+        new Chart(document.getElementById('heatingChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: {{ datasets_heating|safe }}
+            },
+            options: commonOptions
+        });
+
     </script>
+
 </body>
 </html>
