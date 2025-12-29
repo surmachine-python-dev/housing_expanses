@@ -33,13 +33,16 @@ class Command(BaseCommand):
             
             # Ensure date is a date object
             if isinstance(date_val, datetime):
-                date = date_val.date()
+                # Normalize to 1st of the month
+                date = date_val.date().replace(day=1)
             else:
                 # Try to parse if string, or skip
                 try:
-                    date = pd.to_datetime(date_val).date()
+                    # Normalize to 1st of the month
+                    date = pd.to_datetime(date_val).date().replace(day=1)
                 except:
                     continue
+
 
             # Michał User Readings
             readings_michal = [

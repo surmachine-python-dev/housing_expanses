@@ -15,15 +15,48 @@
         .chart-container { position: relative; height: 400px; width: 100%; margin-bottom: 40px; }
         .btn { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; border-radius: 4px; }
         .btn:hover { background-color: #0056b3; }
+        
+        /* Tab Styles */
+        .tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+            margin-bottom: 20px;
+        }
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+        }
+        .tab button:hover {
+            background-color: #ddd;
+        }
+        .tab button.active {
+            background-color: #ccc;
+        }
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>MyHomeApp Dashboard</h1>
         
-        <button class="btn" onclick="toggleChart()">Show/Hide Charts</button>
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'Charts')" id="defaultOpen">Charts</button>
+            <button class="tablinks" onclick="openTab(event, 'History')">History</button>
+        </div>
 
-        <div id="chartsWrapper" style="display: none;">
+        <div id="Charts" class="tabcontent">
             <h3>Water Consumption</h3>
             <div class="chart-container">
                 <canvas id="waterChart"></canvas>
@@ -40,39 +73,49 @@
             </div>
         </div>
 
-        <h2>Readings History</h2>
-        <table id="readingsTable">
-            <thead>
-                <tr>
-                    <th onclick="sortTable(0)">Date</th>
-                    <th onclick="sortTable(1)">User</th>
-                    <th onclick="sortTable(2)">Utility</th>
-                    <th onclick="sortTable(3)">Value</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for reading in readings %}
-                <tr>
-                    <td>{{ reading.date|date:"d.m.Y" }}</td>
-                    <td>{{ reading.user.username }}</td>
-                    <td>{{ reading.utility_type }}</td>
-                    <td>{{ reading.reading_value }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
+        <div id="History" class="tabcontent">
+            <h2>Readings History</h2>
+            <table id="readingsTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Date</th>
+                        <th onclick="sortTable(1)">User</th>
+                        <th onclick="sortTable(2)">Utility</th>
+                        <th onclick="sortTable(3)">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reading in readings %}
+                    <tr>
+                        <td data-sort="{{ reading.date|date:'Ymd' }}">{{ reading.date|date:"m.Y" }}</td>
+                        <td>{{ reading.user.username }}</td>
+                        <td>{{ reading.utility_type }}</td>
+                        <td>{{ reading.reading_value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
 
-        </table>
+            </table>
+        </div>
     </div>
 
     <script>
-        function toggleChart() {
-            const container = document.getElementById('chartsWrapper');
-            if (container.style.display === 'none' || container.style.display === '') {
-                container.style.display = 'block';
-            } else {
-                container.style.display = 'none';
+        function openTab(evt, cityName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
             }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(cityName).style.display = "block";
+            evt.currentTarget.className += " active";
         }
+
+        // Get the element with id="defaultOpen" and click on it
+        document.getElementById("defaultOpen").click();
 
         function sortTable(n) {
             var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
@@ -87,8 +130,9 @@
                     x = rows[i].getElementsByTagName("TD")[n];
                     y = rows[i + 1].getElementsByTagName("TD")[n];
                     
-                    let xVal = x.innerHTML.toLowerCase();
-                    let yVal = y.innerHTML.toLowerCase();
+                    let xVal = x.getAttribute("data-sort") || x.innerHTML.toLowerCase();
+                    let yVal = y.getAttribute("data-sort") || y.innerHTML.toLowerCase();
+
                     
                     // Check if numeric
                     if (!isNaN(parseFloat(xVal)) && isFinite(xVal) && !isNaN(parseFloat(yVal)) && isFinite(yVal)) {
