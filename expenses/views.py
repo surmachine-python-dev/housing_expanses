@@ -106,13 +106,24 @@ def dashboard(request):
                 
             color_index += 1
 
+    # Get available years for report dropdown
+    available_years = sorted(list(set(readings.dates('date', 'year'))), reverse=True)
+    available_years = [d.year for d in available_years]
+
+    # Get available users
+    available_users = sorted(list(set(readings.values_list('user__username', flat=True))))
+
     context = {
         'readings': readings,
+        'available_years': available_years,
+        'available_users': available_users,
         'chart_labels': json.dumps(formatted_dates, cls=DjangoJSONEncoder),
         'datasets_water': json.dumps(datasets_water, cls=DjangoJSONEncoder),
+
         'datasets_energy': json.dumps(datasets_energy, cls=DjangoJSONEncoder),
         'datasets_heating': json.dumps(datasets_heating, cls=DjangoJSONEncoder),
     }
     return render(request, 'expenses/dashboard.html', context)
+
 
 
