@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyHomeApp Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --container-max-width: 1200px;
+            --table-border-color: #ddd;
+            --th-bg-color: #f2f2f2;
+            --th-hover-bg-color: #e0e0e0;
+            --btn-bg-color: #007bff;
+            --btn-text-color: white;
+            --btn-hover-bg-color: #0056b3;
+            --tab-bg-color: #f1f1f1;
+            --tab-border-color: #ccc;
+            --tab-hover-bg-color: #ddd;
+            --tab-active-bg-color: #ccc;
+            --tab-content-border-color: #ccc;
+        }
+
+        .dark-mode {
+            --bg-color: #121212;
+            --text-color: #e0e0e0;
+            --table-border-color: #444;
+            --th-bg-color: #333;
+            --th-hover-bg-color: #444;
+            --btn-bg-color: #0056b3;
+            --btn-hover-bg-color: #004494;
+            --tab-bg-color: #333;
+            --tab-border-color: #444;
+            --tab-hover-bg-color: #444;
+            --tab-active-bg-color: #555;
+            --tab-content-border-color: #444;
+        }
+
+        body { font-family: sans-serif; margin: 20px; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
+        .container { max-width: var(--container-max-width); margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid var(--table-border-color); padding: 8px; text-align: left; }
+        th { background-color: var(--th-bg-color); cursor: pointer; }
+        th:hover { background-color: var(--th-hover-bg-color); }
+        .chart-container { position: relative; height: 400px; width: 100%; margin-bottom: 40px; }
+        .btn { padding: 10px 20px; background-color: var(--btn-bg-color); color: var(--btn-text-color); border: none; cursor: pointer; border-radius: 4px; }
+        .btn:hover { background-color: var(--btn-hover-bg-color); }
+        
+        /* Tab Styles */
+        .tab {
+            overflow: hidden;
+            border: 1px solid var(--tab-border-color);
+            background-color: var(--tab-bg-color);
+            margin-bottom: 20px;
+        }
+        .tab button {
+            background-color: inherit;
+            float: left;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            padding: 14px 16px;
+            transition: 0.3s;
+            font-size: 17px;
+            color: var(--text-color);
+        }
+        .tab button:hover {
+            background-color: var(--tab-hover-bg-color);
+        }
+        .tab button.active {
+            background-color: var(--tab-active-bg-color);
+        }
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid var(--tab-content-border-color);
+            border-top: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h1>MyHomeApp Dashboard</h1>
+            <button id="darkModeToggle" class="btn">Toggle Dark Mode</button>
+        </div>
+        
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'Charts')" id="defaultOpen">Charts</button>
+            <button class="tablinks" onclick="openTab(event, 'History')">History</button>
+            <button class="tablinks" onclick="openTab(event, 'Reports')">Reports</button>
+        </div>
+
+
+        <div id="Charts" class="tabcontent">
+            <h3>Water Consumption</h3>
+            <div class="chart-container">
+                <canvas id="waterChart"></canvas>
+            </div>
+
+            <h3>Energy Consumption</h3>
+            <div class="chart-container">
+                <canvas id="energyChart"></canvas>
+            </div>
+
+            <h3>Heating Consumption</h3>
+            <div class="chart-container">
+                <canvas id="heatingChart"></canvas>
+            </div>
+        </div>
+
+        <div id="Reports" class="tabcontent">
+            <h2>Annual Report</h2>
+            <div style="margin-bottom: 20px;">
+                <label for="reportYear">Select Year:</label>
+                <select id="reportYear">
+                    {% for year in available_years %}
+                    <option value="{{ year }}">{{ year }}</option>
+                    {% endfor %}
+                </select>
+
+                <label for="reportUser" style="margin-left: 20px;">Select User:</label>
+                <select id="reportUser">
+                    <option value="All">All</option>
+                    {% for user in available_users %}
+                    <option value="{{ user }}">{{ user }}</option>
+                    {% endfor %}
+                </select>
+
+                <button class="btn" onclick="generateReport()" style="margin-left: 20px;">Generate</button>
+            </div>
+            
+            <div id="reportOutput">
+                <!-- Report will be generated here -->
+            </div>
+        </div>
+
+        <div id="History" class="tabcontent">
+
+            <h2>Readings History</h2>
+            <table id="readingsTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortTable(0)">Date</th>
+                        <th onclick="sortTable(1)">User</th>
+                        <th onclick="sortTable(2)">Utility</th>
+                        <th onclick="sortTable(3)">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for reading in readings %}
+                    <tr>
+                        <td data-sort="{{ reading.date|date:'Ymd' }}">{{ reading.date|date:"m.Y" }}</td>
+                        <td>{{ reading.user.username }}</td>
+                        <td>{{ reading.utility_type }}</td>
+                        <td>{{ reading.reading_value }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, cityName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(cityName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+
+        // Get the element with id="defaultOpen" and click on it
+        document.getElementById("defaultOpen").click();
+
+        function sortTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("readingsTable");
+            switching = true;
+            dir = "asc"; 
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    
+                    let xVal = x.getAttribute("data-sort") || x.innerHTML.toLowerCase();
+                    let yVal = y.getAttribute("data-sort") || y.innerHTML.toLowerCase();
+
+                    
+                    // Check if numeric
+                    if (!isNaN(parseFloat(xVal)) && isFinite(xVal) && !isNaN(parseFloat(yVal)) && isFinite(yVal)) {
+                        xVal = parseFloat(xVal);
+                        yVal = parseFloat(yVal);
+                    }
+
+                    if (dir == "asc") {
+                        if (xVal > yVal) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (xVal < yVal) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount ++;      
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        };
+
+        const labels = {{ chart_labels|safe }};
+
+        // Water Chart
+        new Chart(document.getElementById('waterChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: {{ datasets_water|safe }}
+            },
+            options: commonOptions
+        });
+
+        // Energy Chart
+        new Chart(document.getElementById('energyChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: {{ datasets_energy|safe }}
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value, index, values) {
+                                return value + ' zł';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.y !== null) {
+                                    label += context.parsed.y + ' zł';
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+
+        // Heating Chart
+        new Chart(document.getElementById('heatingChart').getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: {{ datasets_heating|safe }}
+            },
+            options: commonOptions
+        });
+
+        function generateReport() {
+            const year = document.getElementById('reportYear').value;
+            const selectedUser = document.getElementById('reportUser').value;
+            const output = document.getElementById('reportOutput');
+            
+            // Simple client-side filtering for demonstration
+            // In a real app, this should probably be an AJAX call to a backend view
+            
+            let reportHtml = `<h3>Report for ${year}</h3>`;
+            reportHtml += '<table id="reportTable"><thead><tr><th onclick="sortReportTable(0)">User</th><th onclick="sortReportTable(1)">Utility</th><th onclick="sortReportTable(2)">Total Consumption</th><th onclick="sortReportTable(3)">Average / Month</th></tr></thead><tbody>';
+            
+            // We can reuse the chart datasets which contain the calculated consumption
+            const allDatasets = [
+                ...{{ datasets_water|safe }},
+                ...{{ datasets_energy|safe }},
+                ...{{ datasets_heating|safe }}
+            ];
+            
+            const labels = {{ chart_labels|safe }}; // ["January 2025", "February 2025", ...]
+            
+            allDatasets.forEach(dataset => {
+                // Extract User and Utility from label "User - Utility"
+                const parts = dataset.label.split(' - ');
+                const user = parts[0];
+                const utility = parts[1];
+
+                if (selectedUser !== 'All' && user !== selectedUser) {
+                    return;
+                }
+
+                let total = 0;
+                let count = 0;
+                
+                dataset.data.forEach((value, index) => {
+                    if (labels[index].includes(year) && value !== null) {
+                        total += value;
+                        count++;
+                    }
+                });
+                
+                if (count > 0) {
+                    let avg = total / count;
+                    
+                    let totalStr = total.toFixed(2);
+                    let avgStr = avg.toFixed(2);
+
+                    if (utility === 'Energy') {
+                        totalStr += ' zł';
+                        avgStr += ' zł';
+                    }
+
+                    reportHtml += `<tr>
+                        <td>${user}</td>
+                        <td>${utility}</td>
+                        <td>${totalStr}</td>
+                        <td>${avgStr}</td>
+                    </tr>`;
+                }
+            });
+            
+            reportHtml += '</tbody></table>';
+            output.innerHTML = reportHtml;
+        }
+
+        function sortReportTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("reportTable");
+            switching = true;
+            dir = "asc"; 
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+                    
+                    let xVal = x.innerHTML.toLowerCase().replace(' zł', '');
+                    let yVal = y.innerHTML.toLowerCase().replace(' zł', '');
+                    
+                    // Check if numeric
+                    if (!isNaN(parseFloat(xVal)) && isFinite(xVal) && !isNaN(parseFloat(yVal)) && isFinite(yVal)) {
+                        xVal = parseFloat(xVal);
+                        yVal = parseFloat(yVal);
+                    }
+
+                    if (dir == "asc") {
+                        if (xVal > yVal) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (xVal < yVal) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                    switchcount ++;      
+                } else {
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+
+        // Dark Mode Logic
+        const toggleButton = document.getElementById('darkModeToggle');
+        const body = document.body;
+
+        // Check for saved preference
+        if (localStorage.getItem('darkMode') === 'enabled') {
+            body.classList.add('dark-mode');
+            // Apply theme to charts after they are created
+            // Since this runs after charts are created (script is at bottom), we can update them immediately
+            setTimeout(() => updateChartTheme(true), 100); 
+        }
+
+        toggleButton.addEventListener('click', () => {
+            body.classList.toggle('dark-mode');
+            const isDarkMode = body.classList.contains('dark-mode');
+            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
+            updateChartTheme(isDarkMode);
+        });
+
+        function updateChartTheme(isDark) {
+            const color = isDark ? '#e0e0e0' : '#666';
+            const gridColor = isDark ? '#444' : '#ddd';
+            
+            // Update defaults for future charts
+            Chart.defaults.color = color;
+            Chart.defaults.borderColor = gridColor;
+            
+            // Update existing charts
+            Object.values(Chart.instances).forEach(chart => {
+                chart.options.scales.x.ticks.color = color;
+                chart.options.scales.y.ticks.color = color;
+                chart.options.scales.x.grid.color = gridColor;
+                chart.options.scales.y.grid.color = gridColor;
+                chart.options.plugins.legend.labels.color = color;
+                chart.update();
+            });
+        }
+
+    </script>
+
+
+</body>
+</html>
