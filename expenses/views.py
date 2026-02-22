@@ -5,7 +5,6 @@ from .models import MeterReading, FeeRate
 from .forms import MeterReadingForm, FeeRateForm
 from django.db.models import F
 import json
-from django.core.serializers.json import DjangoJSONEncoder
 
 def dashboard(request):
     if request.method == 'POST':
@@ -152,11 +151,10 @@ def dashboard(request):
         'fee_rates': fee_rates,
         'available_years': available_years,
         'available_users': available_users,
-        'chart_labels': json.dumps(formatted_dates, cls=DjangoJSONEncoder),
-        'datasets_water': json.dumps(datasets_water, cls=DjangoJSONEncoder),
-
-        'datasets_energy': json.dumps(datasets_energy, cls=DjangoJSONEncoder),
-        'datasets_heating': json.dumps(datasets_heating, cls=DjangoJSONEncoder),
+        'chart_labels': formatted_dates,
+        'datasets_water': datasets_water,
+        'datasets_energy': datasets_energy,
+        'datasets_heating': datasets_heating,
         'form': form,
         'fee_form': fee_form,
         'active_tab': active_tab,

@@ -1,0 +1,162 @@
+.app-body {
+    min-height: 100vh;
+}
+
+.app-header .card-body {
+    padding: 1rem 1.1rem;
+}
+
+.app-logo {
+    height: 88px;
+    width: auto;
+    object-fit: contain;
+}
+
+.card-clean {
+    border: 0;
+    box-shadow: 0 .125rem .375rem rgba(0, 0, 0, .06);
+}
+
+.chart-card {
+    min-height: 360px;
+}
+
+.chart-wrap {
+    position: relative;
+    height: 300px;
+}
+
+.table thead th {
+    white-space: nowrap;
+}
+
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+.sort-trigger {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-weight: 600;
+    padding: 0;
+    cursor: pointer;
+}
+
+.section-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.nav-mobile-scroll {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    padding-bottom: .15rem;
+}
+
+.nav-mobile-scroll .nav-link {
+    white-space: nowrap;
+}
+
+.table-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+.table-actions form {
+    margin: 0;
+}
+
+.table-actions .btn {
+    white-space: nowrap;
+}
+
+.form-actions-mobile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+}
+
+[data-bs-theme="dark"] .card,
+[data-bs-theme="dark"] .nav,
+[data-bs-theme="dark"] .table,
+[data-bs-theme="dark"] .dropdown-menu {
+    box-shadow: none;
+}
+
+[data-bs-theme="dark"] .table-light,
+[data-bs-theme="dark"] .table-light > th,
+[data-bs-theme="dark"] .table-light > td,
+[data-bs-theme="dark"] .table > :not(caption) > * > .table-light,
+[data-bs-theme="dark"] .table > :not(caption) > * > th {
+    --bs-table-bg: #2a2f36;
+    --bs-table-color: #e9ecef;
+    color: #e9ecef;
+    background-color: #2a2f36;
+    border-color: #3b434c;
+}
+
+[data-bs-theme="dark"] .sort-trigger {
+    color: #e9ecef;
+}
+
+@media (max-width: 991.98px) {
+    .app-logo {
+        height: 72px;
+    }
+
+    .chart-wrap {
+        height: 260px;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .container {
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+    }
+
+    .card .card-body {
+        padding: 1rem;
+    }
+
+    .table-responsive {
+        font-size: .92rem;
+    }
+
+    .section-title {
+        font-size: 1rem;
+    }
+
+    .chart-wrap {
+        height: 230px;
+    }
+
+    .form-actions-mobile .btn {
+        width: 100%;
+    }
+
+    .nav-mobile-scroll {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .5rem;
+        overflow: visible;
+    }
+
+    .nav-mobile-scroll .nav-item {
+        width: 100%;
+        margin: 0;
+    }
+
+    .nav-mobile-scroll .nav-link {
+        width: 100%;
+        text-align: center;
+        padding: .45rem .5rem;
+        font-size: .86rem;
+    }
+}

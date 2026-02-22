@@ -1,95 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Reading</title>
-    <style>
-        :root {
-            color-scheme: light;
-            --bg-color: #ffffff;
-            --text-color: #000000;
-            --container-max-width: 1200px;
-            --table-border-color: #ddd;
-            --th-bg-color: #f2f2f2;
-            --th-hover-bg-color: #e0e0e0;
-            --btn-bg-color: #007bff;
-            --btn-text-color: white;
-            --btn-hover-bg-color: #0056b3;
-            --tab-bg-color: #f1f1f1;
-            --tab-border-color: #ccc;
-            --tab-hover-bg-color: #ddd;
-            --tab-active-bg-color: #ccc;
-            --tab-content-border-color: #ccc;
-        }
+{% extends 'expenses/base.html' %}
 
-        .dark-mode {
-            color-scheme: dark;
-            --bg-color: #121212;
-            --text-color: #e0e0e0;
-            --table-border-color: #444;
-            --th-bg-color: #333;
-            --th-hover-bg-color: #444;
-            --btn-bg-color: #0056b3;
-            --btn-hover-bg-color: #004494;
-            --tab-bg-color: #333;
-            --tab-border-color: #444;
-            --tab-hover-bg-color: #444;
-            --tab-active-bg-color: #555;
-            --tab-content-border-color: #444;
-        }
+{% block title %}Edit Reading{% endblock %}
 
-        body { font-family: sans-serif; margin: 20px; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid var(--table-border-color); border-radius: 8px; }
-        .btn { padding: 10px 20px; background-color: var(--btn-bg-color); color: var(--btn-text-color); border: none; cursor: pointer; border-radius: 4px; text-decoration: none; display: inline-block; }
-        .btn:hover { background-color: var(--btn-hover-bg-color); }
-        .btn-secondary { background-color: #6c757d; }
-        .btn-secondary:hover { background-color: #5a6268; }
-        
-        input, select {
-            padding: 8px;
-            border: 1px solid var(--table-border-color);
-            border-radius: 4px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            width: 100%;
-            box-sizing: border-box;
-        }
-        label { display: block; margin-bottom: 5px; margin-top: 15px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h2>Edit Reading</h2>
-        <form method="post">
-            {% csrf_token %}
-            <div>
-                <label>User:</label>
-                {{ form.user }}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+        <div class="card card-clean">
+            <div class="card-body p-4">
+                <h2 class="section-title mb-3">Edit Reading</h2>
+                <form method="post" class="row g-3">
+                    {% csrf_token %}
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.user.id_for_label }}">User</label>
+                        {{ form.user }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.date.id_for_label }}">Date</label>
+                        {{ form.date }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.utility_type.id_for_label }}">Utility Type</label>
+                        {{ form.utility_type }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.reading_value.id_for_label }}">Reading Value</label>
+                        {{ form.reading_value }}
+                    </div>
+                    <div class="col-12 form-actions-mobile pt-2">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                        <a href="{% url 'dashboard' %}?tab=History" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
             </div>
-            <div>
-                <label>Date:</label>
-                {{ form.date }}
-            </div>
-            <div>
-                <label>Utility Type:</label>
-                {{ form.utility_type }}
-            </div>
-            <div>
-                <label>Reading Value:</label>
-                {{ form.reading_value }}
-            </div>
-            <div style="margin-top: 20px;">
-                <button type="submit" class="btn">Update</button>
-                <a href="{% url 'dashboard' %}?tab=History" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
+        </div>
     </div>
-    <script>
-        // Check for saved preference
-        if (localStorage.getItem('darkMode') === 'enabled') {
-            document.body.classList.add('dark-mode');
-        }
-    </script>
-</body>
-</html>
+</div>
+{% endblock %}

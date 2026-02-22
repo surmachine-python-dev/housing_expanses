@@ -1,380 +1,406 @@
-{% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyHomeApp Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        :root {
-            color-scheme: light;
-            --bg-color: #ffffff;
-            --text-color: #000000;
-            --container-max-width: 1200px;
-            --table-border-color: #ddd;
-            --th-bg-color: #f2f2f2;
-            --th-hover-bg-color: #e0e0e0;
-            --btn-bg-color: #007bff;
-            --btn-text-color: white;
-            --btn-hover-bg-color: #0056b3;
-            --tab-bg-color: #f1f1f1;
-            --tab-border-color: #ccc;
-            --tab-hover-bg-color: #ddd;
-            --tab-active-bg-color: #ccc;
-            --tab-content-border-color: #ccc;
-        }
+{% extends 'expenses/base.html' %}
 
-        .dark-mode {
-            color-scheme: dark;
-            --bg-color: #121212;
-            --text-color: #e0e0e0;
-            --table-border-color: #444;
-            --th-bg-color: #333;
-            --th-hover-bg-color: #444;
-            --btn-bg-color: #0056b3;
-            --btn-hover-bg-color: #004494;
-            --tab-bg-color: #333;
-            --tab-border-color: #444;
-            --tab-hover-bg-color: #444;
-            --tab-active-bg-color: #555;
-            --tab-content-border-color: #444;
-        }
+{% block title %}MyHomeApp Dashboard{% endblock %}
 
-        body { font-family: sans-serif; margin: 20px; background-color: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
-        .container { max-width: var(--container-max-width); margin: 0 auto; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid var(--table-border-color); padding: 8px; text-align: left; }
-        th { background-color: var(--th-bg-color); cursor: pointer; }
-        th:hover { background-color: var(--th-hover-bg-color); }
-        .chart-container { position: relative; height: 400px; width: 100%; margin-bottom: 40px; }
-        .btn { padding: 10px 20px; background-color: var(--btn-bg-color); color: var(--btn-text-color); border: none; cursor: pointer; border-radius: 4px; }
-        .btn:hover { background-color: var(--btn-hover-bg-color); }
-        
-        /* Tab Styles */
-        .tab {
-            overflow: hidden;
-            border: 1px solid var(--tab-border-color);
-            background-color: var(--tab-bg-color);
-            margin-bottom: 20px;
-        }
-        .tab button {
-            background-color: inherit;
-            float: left;
-            border: none;
-            outline: none;
-            cursor: pointer;
-            padding: 14px 16px;
-            transition: 0.3s;
-            font-size: 17px;
-            color: var(--text-color);
-        }
-        .tab button:hover {
-            background-color: var(--tab-hover-bg-color);
-        }
-        .tab button.active {
-            background-color: var(--tab-active-bg-color);
-        }
-        .tabcontent {
-            display: none;
-            padding: 6px 12px;
-            border: 1px solid var(--tab-content-border-color);
-            border-top: none;
-        }
-        
-        input, select {
-            padding: 8px;
-            border: 1px solid var(--table-border-color);
-            border-radius: 4px;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-        }
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
 
-        .message-popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #d4edda;
-            color: #155724;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
-            z-index: 1000;
-            border: 1px solid #c3e6cb;
-            text-align: center;
-            min-width: 300px;
-            opacity: 1;
-            transition: opacity 0.5s ease-in-out;
-        }
-        .message-popup.fade-out {
-            opacity: 0;
-        }
+{% block content %}
+<div class="card card-clean mb-4">
+    <div class="card-body">
+        <ul class="nav nav-pills gap-2 nav-mobile-scroll" id="dashboardTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_tab == 'Charts' %}active{% endif %}" id="charts-tab" data-bs-toggle="tab" data-bs-target="#charts-pane" type="button" role="tab" aria-controls="charts-pane" aria-selected="{% if active_tab == 'Charts' %}true{% else %}false{% endif %}">Charts</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_tab == 'History' %}active{% endif %}" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-pane" type="button" role="tab" aria-controls="history-pane" aria-selected="{% if active_tab == 'History' %}true{% else %}false{% endif %}">History</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_tab == 'Reports' %}active{% endif %}" id="reports-tab" data-bs-toggle="tab" data-bs-target="#reports-pane" type="button" role="tab" aria-controls="reports-pane" aria-selected="{% if active_tab == 'Reports' %}true{% else %}false{% endif %}">Reports</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_tab == 'AddEntry' %}active{% endif %}" id="addentry-tab" data-bs-toggle="tab" data-bs-target="#addentry-pane" type="button" role="tab" aria-controls="addentry-pane" aria-selected="{% if active_tab == 'AddEntry' %}true{% else %}false{% endif %}">Add</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link {% if active_tab == 'Fees' %}active{% endif %}" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees-pane" type="button" role="tab" aria-controls="fees-pane" aria-selected="{% if active_tab == 'Fees' %}true{% else %}false{% endif %}">Fees</button>
+            </li>
+        </ul>
+    </div>
+</div>
 
-        #darkModeToggle {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 24px;
-            padding: 5px;
-            color: var(--text-color);
-            transition: transform 0.3s ease;
-        }
-        #darkModeToggle:hover {
-            transform: scale(1.1);
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <img src="{% static 'expenses/images/logo.png' %}" alt="MyHomeApp" style="height: 150px; width: auto;">
-            <button id="darkModeToggle" title="Toggle Dark/Light Mode">🌙</button>
-        </div>
-
-        {% if messages %}
-            {% for message in messages %}
-            <div class="message-popup">
-                {{ message }}
-            </div>
-            {% endfor %}
-        {% endif %}
-        
-        <div class="tab">
-            <button class="tablinks" onclick="openTab(event, 'Charts')" id="defaultOpen">Charts</button>
-            <button class="tablinks" onclick="openTab(event, 'History')">History</button>
-            <button class="tablinks" onclick="openTab(event, 'Reports')">Reports</button>
-            <button class="tablinks" onclick="openTab(event, 'AddEntry')">Add Entry</button>
-            <button class="tablinks" onclick="openTab(event, 'Fees')">Annual Fees</button>
-        </div>
-
-
-        <div id="Charts" class="tabcontent">
-            <h3>Water Consumption</h3>
-            <div class="chart-container">
-                <canvas id="waterChart"></canvas>
-            </div>
-
-            <h3>Energy Consumption</h3>
-            <div class="chart-container">
-                <canvas id="energyChart"></canvas>
-            </div>
-
-            <h3>Heating Consumption</h3>
-            <div class="chart-container">
-                <canvas id="heatingChart"></canvas>
-            </div>
-        </div>
-
-        <div id="Reports" class="tabcontent">
-            <h2>Annual Report</h2>
-            <div style="margin-bottom: 20px;">
-                <label for="reportYear">Select Year:</label>
-                <select id="reportYear">
-                    {% for year in available_years %}
-                    <option value="{{ year }}">{{ year }}</option>
-                    {% endfor %}
-                </select>
-
-                <label for="reportUser" style="margin-left: 20px;">Select User:</label>
-                <select id="reportUser">
-                    <option value="All">All</option>
-                    {% for user in available_users %}
-                    <option value="{{ user }}">{{ user }}</option>
-                    {% endfor %}
-                </select>
-
-                <button class="btn" onclick="generateReport()" style="margin-left: 20px;">Generate</button>
-            </div>
-            
-            <div id="reportOutput">
-                <!-- Report will be generated here -->
-            </div>
-        </div>
-
-        <div id="History" class="tabcontent">
-
-            <h2>Readings History</h2>
-            <table id="readingsTable">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable(0, 'readingsTable')">Date</th>
-                        <th onclick="sortTable(1, 'readingsTable')">User</th>
-                        <th onclick="sortTable(2, 'readingsTable')">Utility</th>
-                        <th onclick="sortTable(3, 'readingsTable')">Value</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for reading in readings %}
-                    <tr>
-                        <td data-sort="{{ reading.date|date:'Ymd' }}">{{ reading.date|date:"m.Y" }}</td>
-                        <td>{{ reading.user.username }}</td>
-                        <td>{{ reading.utility_type }}</td>
-                        <td>{{ reading.reading_value }}</td>
-                        <td>
-                            <a href="{% url 'edit_reading' reading.pk %}" class="btn" style="background-color: #ffc107; color: #000; padding: 5px 10px; font-size: 12px; margin-right: 5px;">Modify</a>
-                            <form action="{% url 'delete_reading' reading.pk %}" method="post" onsubmit="return confirm('Are you sure you want to delete this entry?');" style="display:inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn" style="background-color: #dc3545; padding: 5px 10px; font-size: 12px;">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-
-            </table>
-        </div>
-
-        <div id="AddEntry" class="tabcontent">
-            <h2>Add New Reading</h2>
-            <form method="post" style="max-width: 400px;">
-                {% csrf_token %}
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">User:</label>
-                    {{ form.user }}
+<div class="tab-content">
+    <div class="tab-pane fade {% if active_tab == 'Charts' %}show active{% endif %}" id="charts-pane" role="tabpanel" aria-labelledby="charts-tab" tabindex="0">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card card-clean chart-card">
+                    <div class="card-body">
+                        <h2 class="section-title mb-3">Water Consumption</h2>
+                        <div class="chart-wrap"><canvas id="waterChart"></canvas></div>
+                    </div>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">Date:</label>
-                    {{ form.date }}
+            </div>
+            <div class="col-12">
+                <div class="card card-clean chart-card">
+                    <div class="card-body">
+                        <h2 class="section-title mb-3">Energy Consumption</h2>
+                        <div class="chart-wrap"><canvas id="energyChart"></canvas></div>
+                    </div>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">Utility Type:</label>
-                    {{ form.utility_type }}
+            </div>
+            <div class="col-12">
+                <div class="card card-clean chart-card">
+                    <div class="card-body">
+                        <h2 class="section-title mb-3">Heating Consumption</h2>
+                        <div class="chart-wrap"><canvas id="heatingChart"></canvas></div>
+                    </div>
                 </div>
-                <div style="margin-bottom: 15px;">
-                    <label style="display: block; margin-bottom: 5px;">Reading Value:</label>
-                    {{ form.reading_value }}
-                </div>
-                <button type="submit" name="reading_submit" class="btn">Save</button>
-            </form>
+            </div>
         </div>
-
-        <div id="Fees" class="tabcontent">
-            <h2>Fees and Rates</h2>
-            
-            <table id="feesTable">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable(0, 'feesTable')">Year</th>
-                        <th onclick="sortTable(1, 'feesTable')">Type</th>
-                        <th onclick="sortTable(2, 'feesTable')">Included Quantity</th>
-                        <th onclick="sortTable(3, 'feesTable')">Unit Price</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for fee in fee_rates %}
-                    <tr>
-                        <td data-sort="{{ fee.year }}">{{ fee.year }}</td>
-                        <td>{{ fee.get_fee_type_display }}</td>
-                        <td data-sort="{{ fee.quantity_included }}">{{ fee.quantity_included }}</td>
-                        <td data-sort="{{ fee.unit_price }}">{{ fee.unit_price }} PLN</td>
-                        <td>
-                            <a href="{% url 'edit_fee_rate' fee.pk %}" class="btn" style="background-color: #ffc107; color: #000; padding: 5px 10px; font-size: 12px; margin-right: 5px;">Modify</a>
-                            <form action="{% url 'delete_fee_rate' fee.pk %}" method="post" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete?');">
-                                {% csrf_token %}
-                                <button type="submit" class="btn" style="background-color: #dc3545; padding: 5px 10px; font-size: 12px;">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="5">No rates found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-
-            <h3 style="margin-top: 30px;">Add New Rate</h3>
-            <form method="post" style="max-width: 400px;">
-                {% csrf_token %}
-                {{ fee_form.as_p }}
-                <button type="submit" name="fee_submit" class="btn">Add Rate</button>
-            </form>
-        </div>
-
     </div>
 
-    <script>
-        function openTab(evt, cityName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tabcontent");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tablinks");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(cityName).style.display = "block";
-            evt.currentTarget.className += " active";
-        }
+    <div class="tab-pane fade {% if active_tab == 'History' %}show active{% endif %}" id="history-pane" role="tabpanel" aria-labelledby="history-tab" tabindex="0">
+        <div class="card card-clean">
+            <div class="card-body">
+                <h2 class="section-title mb-3">Readings History</h2>
+                <div class="table-responsive">
+                    <table id="readingsTable" class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th><button class="sort-trigger" type="button" onclick="sortTable(0, 'readingsTable')">Date</button></th>
+                                <th><button class="sort-trigger" type="button" onclick="sortTable(1, 'readingsTable')">User</button></th>
+                                <th><button class="sort-trigger" type="button" onclick="sortTable(2, 'readingsTable')">Utility</button></th>
+                                <th><button class="sort-trigger" type="button" onclick="sortTable(3, 'readingsTable')">Value</button></th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reading in readings %}
+                            <tr>
+                                <td data-sort="{{ reading.date|date:'Ymd' }}">{{ reading.date|date:"m.Y" }}</td>
+                                <td>{{ reading.user.username }}</td>
+                                <td>{{ reading.utility_type }}</td>
+                                <td>{{ reading.reading_value }}</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <a href="{% url 'edit_reading' reading.pk %}" class="btn btn-sm btn-outline-secondary">Modify</a>
+                                        <form action="{% url 'delete_reading' reading.pk %}" method="post" onsubmit="return confirm('Are you sure you want to delete this entry?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        // Open the active tab
-        const activeTab = "{{ active_tab }}";
-        let tabOpened = false;
-        if (activeTab && activeTab !== 'None') {
-             const tabBtn = document.querySelector(`.tablinks[onclick*="'${activeTab}'"]`);
-             if (tabBtn) {
-                 tabBtn.click();
-                 tabOpened = true;
-             }
-        }
-        
-        if (!tabOpened) {
-            document.getElementById("defaultOpen").click();
-        }
+    <div class="tab-pane fade {% if active_tab == 'Reports' %}show active{% endif %}" id="reports-pane" role="tabpanel" aria-labelledby="reports-tab" tabindex="0">
+        <div class="card card-clean">
+            <div class="card-body">
+                <h2 class="section-title mb-3">Annual Report</h2>
+                <div class="row g-3 align-items-end mb-3">
+                    <div class="col-md-3">
+                        <label for="reportYear" class="form-label">Select Year</label>
+                        <select id="reportYear" class="form-select">
+                            {% for year in available_years %}
+                            <option value="{{ year }}">{{ year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="reportUser" class="form-label">Select User</label>
+                        <select id="reportUser" class="form-select">
+                            <option value="All">All</option>
+                            {% for user in available_users %}
+                            <option value="{{ user }}">{{ user }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-grid d-md-block">
+                        <button class="btn btn-primary" type="button" onclick="generateReport()">Generate</button>
+                    </div>
+                </div>
+                <div id="reportOutput"></div>
+            </div>
+        </div>
+    </div>
 
-        function sortTable(n, tableId) {
-            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-            table = document.getElementById(tableId);
-            switching = true;
-            dir = "asc"; 
-            while (switching) {
-                switching = false;
-                rows = table.rows;
-                for (i = 1; i < (rows.length - 1); i++) {
-                    shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("TD")[n];
-                    y = rows[i + 1].getElementsByTagName("TD")[n];
-                    
-                    let xVal = x.getAttribute("data-sort") || x.innerHTML.toLowerCase();
-                    let yVal = y.getAttribute("data-sort") || y.innerHTML.toLowerCase();
+    <div class="tab-pane fade {% if active_tab == 'AddEntry' %}show active{% endif %}" id="addentry-pane" role="tabpanel" aria-labelledby="addentry-tab" tabindex="0">
+        <div class="card card-clean">
+            <div class="card-body">
+                <h2 class="section-title mb-3">Add New Reading</h2>
+                <form method="post" class="row g-3">
+                    {% csrf_token %}
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.user.id_for_label }}">User</label>
+                        {{ form.user }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.date.id_for_label }}">Date</label>
+                        {{ form.date }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.utility_type.id_for_label }}">Utility Type</label>
+                        {{ form.utility_type }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.reading_value.id_for_label }}">Reading Value</label>
+                        {{ form.reading_value }}
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" name="reading_submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
-                    
-                    // Check if numeric
-                    if (!isNaN(parseFloat(xVal)) && isFinite(xVal) && !isNaN(parseFloat(yVal)) && isFinite(yVal)) {
-                        xVal = parseFloat(xVal);
-                        yVal = parseFloat(yVal);
+    <div class="tab-pane fade {% if active_tab == 'Fees' %}show active{% endif %}" id="fees-pane" role="tabpanel" aria-labelledby="fees-tab" tabindex="0">
+        <div class="row g-4">
+            <div class="col-12">
+                <div class="card card-clean">
+                    <div class="card-body">
+                        <h2 class="section-title mb-3">Fees and Rates</h2>
+                        <div class="table-responsive">
+                            <table id="feesTable" class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th><button class="sort-trigger" type="button" onclick="sortTable(0, 'feesTable')">Year</button></th>
+                                        <th><button class="sort-trigger" type="button" onclick="sortTable(1, 'feesTable')">Type</button></th>
+                                        <th><button class="sort-trigger" type="button" onclick="sortTable(2, 'feesTable')">Included Quantity</button></th>
+                                        <th><button class="sort-trigger" type="button" onclick="sortTable(3, 'feesTable')">Unit Price</button></th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for fee in fee_rates %}
+                                    <tr>
+                                        <td data-sort="{{ fee.year }}">{{ fee.year }}</td>
+                                        <td>{{ fee.get_fee_type_display }}</td>
+                                        <td data-sort="{{ fee.quantity_included }}">{{ fee.quantity_included }}</td>
+                                        <td data-sort="{{ fee.unit_price }}">{{ fee.unit_price }} PLN</td>
+                                        <td>
+                                            <div class="table-actions">
+                                                <a href="{% url 'edit_fee_rate' fee.pk %}" class="btn btn-sm btn-outline-secondary">Modify</a>
+                                                <form action="{% url 'delete_fee_rate' fee.pk %}" method="post" onsubmit="return confirm('Are you sure you want to delete?');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center text-body-secondary">No rates found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-12 col-lg-7">
+                <div class="card card-clean">
+                    <div class="card-body">
+                        <h3 class="section-title mb-3">Add New Rate</h3>
+                        <form method="post" class="row g-3">
+                            {% csrf_token %}
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ fee_form.year.id_for_label }}">Year</label>
+                                {{ fee_form.year }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ fee_form.fee_type.id_for_label }}">Type</label>
+                                {{ fee_form.fee_type }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ fee_form.quantity_included.id_for_label }}">Included Quantity</label>
+                                {{ fee_form.quantity_included }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="{{ fee_form.unit_price.id_for_label }}">Unit Price</label>
+                                {{ fee_form.unit_price }}
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" name="fee_submit" class="btn btn-primary">Add Rate</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ chart_labels|json_script:"chart-labels-data" }}
+{{ datasets_water|json_script:"datasets-water-data" }}
+{{ datasets_energy|json_script:"datasets-energy-data" }}
+{{ datasets_heating|json_script:"datasets-heating-data" }}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    const chartLabels = JSON.parse(document.getElementById('chart-labels-data').textContent);
+    const datasetsWater = JSON.parse(document.getElementById('datasets-water-data').textContent);
+    const datasetsEnergy = JSON.parse(document.getElementById('datasets-energy-data').textContent);
+    const datasetsHeating = JSON.parse(document.getElementById('datasets-heating-data').textContent);
+
+    function sortTable(n, tableId) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById(tableId);
+        if (!table) {
+            return;
+        }
+        switching = true;
+        dir = 'asc';
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName('TD')[n];
+                y = rows[i + 1].getElementsByTagName('TD')[n];
+
+                let xVal = x.getAttribute('data-sort') || x.innerHTML.toLowerCase();
+                let yVal = y.getAttribute('data-sort') || y.innerHTML.toLowerCase();
+
+                if (!isNaN(parseFloat(xVal)) && isFinite(xVal) && !isNaN(parseFloat(yVal)) && isFinite(yVal)) {
+                    xVal = parseFloat(xVal);
+                    yVal = parseFloat(yVal);
+                }
+
+                if (dir === 'asc') {
+                    if (xVal > yVal) {
+                        shouldSwitch = true;
+                        break;
                     }
-
-                    if (dir == "asc") {
-                        if (xVal > yVal) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else if (dir == "desc") {
-                        if (xVal < yVal) {
-                            shouldSwitch = true;
-                            break;
-                        }
+                } else if (dir === 'desc') {
+                    if (xVal < yVal) {
+                        shouldSwitch = true;
+                        break;
                     }
                 }
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount++;
+            } else {
+                if (switchcount === 0 && dir === 'asc') {
+                    dir = 'desc';
                     switching = true;
-                    switchcount ++;      
-                } else {
-                    if (switchcount == 0 && dir == "asc") {
-                        dir = "desc";
-                        switching = true;
-                    }
                 }
             }
         }
+    }
 
-        const commonOptions = {
+    function generateReport() {
+        const year = document.getElementById('reportYear').value;
+        const selectedUser = document.getElementById('reportUser').value;
+        const output = document.getElementById('reportOutput');
+
+        let reportHtml = `<h3 class="section-title mb-3">Report for ${year}</h3>`;
+        reportHtml += '<div class="table-responsive">';
+        reportHtml += '<table id="reportTable" class="table table-striped table-hover align-middle"><thead class="table-light"><tr><th><button class="sort-trigger" type="button" onclick="sortReportTable(0)">User</button></th><th><button class="sort-trigger" type="button" onclick="sortReportTable(1)">Utility</button></th><th><button class="sort-trigger" type="button" onclick="sortReportTable(2)">Total Consumption</button></th><th><button class="sort-trigger" type="button" onclick="sortReportTable(3)">Average / Month</button></th></tr></thead><tbody>';
+
+        const allDatasets = [...datasetsWater, ...datasetsEnergy, ...datasetsHeating];
+
+        allDatasets.forEach(dataset => {
+            const parts = dataset.label.split(' - ');
+            const user = parts[0];
+            const utility = parts[1];
+
+            if (selectedUser !== 'All' && user !== selectedUser) {
+                return;
+            }
+
+            let total = 0;
+            let count = 0;
+
+            dataset.data.forEach((value, index) => {
+                if (chartLabels[index].includes(year) && value !== null) {
+                    total += value;
+                    count++;
+                }
+            });
+
+            if (count > 0) {
+                let avg = total / count;
+                let totalStr = total.toFixed(2);
+                let avgStr = avg.toFixed(2);
+
+                if (utility === 'Energy') {
+                    totalStr += ' zł';
+                    avgStr += ' zł';
+                }
+
+                reportHtml += `<tr>
+                    <td>${user}</td>
+                    <td>${utility}</td>
+                    <td>${totalStr}</td>
+                    <td>${avgStr}</td>
+                </tr>`;
+            }
+        });
+
+        reportHtml += '</tbody></table></div>';
+        output.innerHTML = reportHtml;
+    }
+
+    function sortReportTable(n) {
+        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+        table = document.getElementById('reportTable');
+        switching = true;
+        dir = 'asc';
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 1; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName('TD')[n];
+                y = rows[i + 1].getElementsByTagName('TD')[n];
+
+                let xVal = x.innerHTML.toLowerCase().replace(' zł', '');
+                let yVal = y.innerHTML.toLowerCase().replace(' zł', '');
+
+                if (!isNaN(parseFloat(xVal)) && isFinite(xVal) && !isNaN(parseFloat(yVal)) && isFinite(yVal)) {
+                    xVal = parseFloat(xVal);
+                    yVal = parseFloat(yVal);
+                }
+
+                if (dir === 'asc') {
+                    if (xVal > yVal) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else if (dir === 'desc') {
+                    if (xVal < yVal) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+            }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+                switchcount++;
+            } else {
+                if (switchcount === 0 && dir === 'asc') {
+                    dir = 'desc';
+                    switching = true;
+                }
+            }
+        }
+    }
+
+    function createCommonOptions() {
+        return {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
@@ -383,239 +409,63 @@
                 }
             }
         };
+    }
 
-        const labels = {{ chart_labels|safe }};
+    const waterChart = new Chart(document.getElementById('waterChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: datasetsWater
+        },
+        options: createCommonOptions()
+    });
 
-        // Water Chart
-        new Chart(document.getElementById('waterChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: {{ datasets_water|safe }}
-            },
-            options: commonOptions
-        });
-
-        // Energy Chart
-        new Chart(document.getElementById('energyChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: {{ datasets_energy|safe }}
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value, index, values) {
-                                return value + ' zł';
-                            }
+    const energyChart = new Chart(document.getElementById('energyChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: datasetsEnergy
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' zł';
                         }
                     }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.parsed.y !== null) {
-                                    label += context.parsed.y + ' zł';
-                                }
-                                return label;
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
                             }
+                            if (context.parsed.y !== null) {
+                                label += context.parsed.y + ' zł';
+                            }
+                            return label;
                         }
                     }
                 }
             }
-        });
-
-
-        // Heating Chart
-        new Chart(document.getElementById('heatingChart').getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: {{ datasets_heating|safe }}
-            },
-            options: commonOptions
-        });
-
-        function generateReport() {
-            const year = document.getElementById('reportYear').value;
-            const selectedUser = document.getElementById('reportUser').value;
-            const output = document.getElementById('reportOutput');
-            
-            // Simple client-side filtering for demonstration
-            // In a real app, this should probably be an AJAX call to a backend view
-            
-            let reportHtml = `<h3>Report for ${year}</h3>`;
-            reportHtml += '<table id="reportTable"><thead><tr><th onclick="sortReportTable(0)">User</th><th onclick="sortReportTable(1)">Utility</th><th onclick="sortReportTable(2)">Total Consumption</th><th onclick="sortReportTable(3)">Average / Month</th></tr></thead><tbody>';
-            
-            // We can reuse the chart datasets which contain the calculated consumption
-            const allDatasets = [
-                ...{{ datasets_water|safe }},
-                ...{{ datasets_energy|safe }},
-                ...{{ datasets_heating|safe }}
-            ];
-            
-            const labels = {{ chart_labels|safe }}; // ["January 2025", "February 2025", ...]
-            
-            allDatasets.forEach(dataset => {
-                // Extract User and Utility from label "User - Utility"
-                const parts = dataset.label.split(' - ');
-                const user = parts[0];
-                const utility = parts[1];
-
-                if (selectedUser !== 'All' && user !== selectedUser) {
-                    return;
-                }
-
-                let total = 0;
-                let count = 0;
-                
-                dataset.data.forEach((value, index) => {
-                    if (labels[index].includes(year) && value !== null) {
-                        total += value;
-                        count++;
-                    }
-                });
-                
-                if (count > 0) {
-                    let avg = total / count;
-                    
-                    let totalStr = total.toFixed(2);
-                    let avgStr = avg.toFixed(2);
-
-                    if (utility === 'Energy') {
-                        totalStr += ' zł';
-                        avgStr += ' zł';
-                    }
-
-                    reportHtml += `<tr>
-                        <td>${user}</td>
-                        <td>${utility}</td>
-                        <td>${totalStr}</td>
-                        <td>${avgStr}</td>
-                    </tr>`;
-                }
-            });
-            
-            reportHtml += '</tbody></table>';
-            output.innerHTML = reportHtml;
         }
+    });
 
-        function sortReportTable(n) {
-            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-            table = document.getElementById("reportTable");
-            switching = true;
-            dir = "asc"; 
-            while (switching) {
-                switching = false;
-                rows = table.rows;
-                for (i = 1; i < (rows.length - 1); i++) {
-                    shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("TD")[n];
-                    y = rows[i + 1].getElementsByTagName("TD")[n];
-                    
-                    let xVal = x.innerHTML.toLowerCase().replace(' zł', '');
-                    let yVal = y.innerHTML.toLowerCase().replace(' zł', '');
-                    
-                    // Check if numeric
-                    if (!isNaN(parseFloat(xVal)) && isFinite(xVal) && !isNaN(parseFloat(yVal)) && isFinite(yVal)) {
-                        xVal = parseFloat(xVal);
-                        yVal = parseFloat(yVal);
-                    }
+    const heatingChart = new Chart(document.getElementById('heatingChart').getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: chartLabels,
+            datasets: datasetsHeating
+        },
+        options: createCommonOptions()
+    });
 
-                    if (dir == "asc") {
-                        if (xVal > yVal) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else if (dir == "desc") {
-                        if (xVal < yVal) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    }
-                }
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    switchcount ++;      
-                } else {
-                    if (switchcount == 0 && dir == "asc") {
-                        dir = "desc";
-                        switching = true;
-                    }
-                }
-            }
-        }
-
-        // Dark Mode Logic
-        const toggleButton = document.getElementById('darkModeToggle');
-        const body = document.body;
-
-        function setToggleIcon(isDark) {
-            toggleButton.textContent = isDark ? '☀️' : '🌙';
-        }
-
-        // Check for saved preference
-        if (localStorage.getItem('darkMode') === 'enabled') {
-            body.classList.add('dark-mode');
-            setToggleIcon(true);
-            // Apply theme to charts after they are created
-            // Since this runs after charts are created (script is at bottom), we can update them immediately
-            setTimeout(() => updateChartTheme(true), 100); 
-        } else {
-            setToggleIcon(false);
-        }
-
-        toggleButton.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-            const isDarkMode = body.classList.contains('dark-mode');
-            setToggleIcon(isDarkMode);
-            localStorage.setItem('darkMode', isDarkMode ? 'enabled' : 'disabled');
-            updateChartTheme(isDarkMode);
-        });
-
-        function updateChartTheme(isDark) {
-            const color = isDark ? '#e0e0e0' : '#666';
-            const gridColor = isDark ? '#444' : '#ddd';
-            
-            // Update defaults for future charts
-            Chart.defaults.color = color;
-            Chart.defaults.borderColor = gridColor;
-            
-            // Update existing charts
-            Object.values(Chart.instances).forEach(chart => {
-                chart.options.scales.x.ticks.color = color;
-                chart.options.scales.y.ticks.color = color;
-                chart.options.scales.x.grid.color = gridColor;
-                chart.options.scales.y.grid.color = gridColor;
-                chart.options.plugins.legend.labels.color = color;
-                chart.update();
-            });
-        }
-
-        // Auto-dismiss messages
-        const messages = document.querySelectorAll('.message-popup');
-        if (messages.length > 0) {
-            setTimeout(() => {
-                messages.forEach(msg => {
-                    msg.classList.add('fade-out');
-                    setTimeout(() => msg.remove(), 500); // Remove after fade out
-                });
-            }, 2000);
-        }
-
-    </script>
-
-
-</body>
-</html>
+</script>
+{% endblock %}
