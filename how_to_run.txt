@@ -1,0 +1,4 @@
+cd D:\python_projects\housing_expenses_app\housing_expanses
+.\venv\Scripts\Activate.ps1
+python manage.py runserver
+
