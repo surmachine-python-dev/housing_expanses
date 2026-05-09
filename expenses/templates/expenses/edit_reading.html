@@ -1,0 +1,38 @@
+{% extends 'expenses/base.html' %}
+
+{% block title %}Edit Reading{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-7">
+        <div class="card card-clean">
+            <div class="card-body p-4">
+                <h2 class="section-title mb-3">Edit Reading</h2>
+                <form method="post" class="row g-3">
+                    {% csrf_token %}
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.user.id_for_label }}">User</label>
+                        {{ form.user }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.date.id_for_label }}">Date</label>
+                        {{ form.date }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.utility_type.id_for_label }}">Utility Type</label>
+                        {{ form.utility_type }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="{{ form.reading_value.id_for_label }}">Reading Value</label>
+                        {{ form.reading_value }}
+                    </div>
+                    <div class="col-12 form-actions-mobile pt-2">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                        <a href="{% url 'dashboard' %}?tab=History" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

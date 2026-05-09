@@ -1,13 +1,44 @@
-from django.shortcuts import render
-from .models import MeterReading
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.contrib import messages
+from .models import MeterReading, FeeRate
+from .forms import MeterReadingForm, FeeRateForm
 from django.db.models import F
 import json
-from django.core.serializers.json import DjangoJSONEncoder
 
 def dashboard(request):
+    if request.method == 'POST':
+        if 'reading_submit' in request.POST:
+            form = MeterReadingForm(request.POST)
+            fee_form = FeeRateForm()
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Saved successfully!')
+                return redirect(f"{reverse('dashboard')}?tab=AddEntry")
+        elif 'fee_submit' in request.POST:
+            form = MeterReadingForm()
+            fee_form = FeeRateForm(request.POST)
+            if fee_form.is_valid():
+                fee_form.save()
+                messages.success(request, 'Fee rate saved successfully!')
+                return redirect(f"{reverse('dashboard')}?tab=Fees")
+            else:
+                messages.error(request, 'Error saving fee rate. ' + str(fee_form.errors))
+        else:
+            form = MeterReadingForm()
+            fee_form = FeeRateForm()
+    else:
+        form = MeterReadingForm()
+        fee_form = FeeRateForm()
+
+    active_tab = request.GET.get('tab', 'Charts')
+
     # For demonstration, fetch all readings. 
     # In a real app, you might filter by request.user
     readings = MeterReading.objects.all().order_by('date')
+    
+    # Readings for the table (descending order)
+    readings_table = MeterReading.objects.all().order_by('-date')
     
     # Prepare data for Chart.js
     # We want a line for each Utility Type (and maybe User?)
@@ -113,17 +144,63 @@ def dashboard(request):
     # Get available users
     available_users = sorted(list(set(readings.values_list('user__username', flat=True))))
 
+    fee_rates = FeeRate.objects.all()
+
     context = {
-        'readings': readings,
+        'readings': readings_table,
+        'fee_rates': fee_rates,
         'available_years': available_years,
         'available_users': available_users,
-        'chart_labels': json.dumps(formatted_dates, cls=DjangoJSONEncoder),
-        'datasets_water': json.dumps(datasets_water, cls=DjangoJSONEncoder),
-
-        'datasets_energy': json.dumps(datasets_energy, cls=DjangoJSONEncoder),
-        'datasets_heating': json.dumps(datasets_heating, cls=DjangoJSONEncoder),
+        'chart_labels': formatted_dates,
+        'datasets_water': datasets_water,
+        'datasets_energy': datasets_energy,
+        'datasets_heating': datasets_heating,
+        'form': form,
+        'fee_form': fee_form,
+        'active_tab': active_tab,
     }
     return render(request, 'expenses/dashboard.html', context)
+
+def delete_reading(request, pk):
+    reading = get_object_or_404(MeterReading, pk=pk)
+    if request.method == 'POST':
+        reading.delete()
+        messages.success(request, 'Entry deleted successfully!')
+        return redirect(f"{reverse('dashboard')}?tab=History")
+    return redirect('dashboard')
+
+def edit_reading(request, pk):
+    reading = get_object_or_404(MeterReading, pk=pk)
+    if request.method == 'POST':
+        form = MeterReadingForm(request.POST, instance=reading)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Entry updated successfully!')
+            return redirect(f"{reverse('dashboard')}?tab=History")
+    else:
+        form = MeterReadingForm(instance=reading)
+    return render(request, 'expenses/edit_reading.html', {'form': form, 'reading': reading})
+
+def delete_fee_rate(request, pk):
+    fee = get_object_or_404(FeeRate, pk=pk)
+    if request.method == 'POST':
+        fee.delete()
+        messages.success(request, 'Fee rate deleted successfully!')
+        return redirect(f"{reverse('dashboard')}?tab=Fees")
+    return redirect('dashboard')
+
+def edit_fee_rate(request, pk):
+    fee = get_object_or_404(FeeRate, pk=pk)
+    if request.method == 'POST':
+        form = FeeRateForm(request.POST, instance=fee)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Fee rate updated successfully!')
+            return redirect(f"{reverse('dashboard')}?tab=Fees")
+    else:
+        form = FeeRateForm(instance=fee)
+    return render(request, 'expenses/edit_fee_rate.html', {'form': form, 'fee': fee})
+
 
 
 
