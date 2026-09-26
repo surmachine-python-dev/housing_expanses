@@ -10,21 +10,18 @@
                 <h2 class="section-title mb-3">Edit Fee Rate</h2>
                 <form method="post" class="row g-3">
                     {% csrf_token %}
+                    {% include 'expenses/_form_errors.html' with form=form %}
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.year.id_for_label }}">Year</label>
-                        {{ form.year }}
+                        {% include 'expenses/_field.html' with field=form.year label='Year' %}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.fee_type.id_for_label }}">Fee Type</label>
-                        {{ form.fee_type }}
+                        {% include 'expenses/_field.html' with field=form.fee_type label='Fee Type' %}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.quantity_included.id_for_label }}">Included Quantity</label>
-                        {{ form.quantity_included }}
+                        {% include 'expenses/_field.html' with field=form.quantity_included label='Included Quantity' %}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.unit_price.id_for_label }}">Unit Price</label>
-                        {{ form.unit_price }}
+                        {% include 'expenses/_field.html' with field=form.unit_price label='Unit Price' %}
                     </div>
                     <div class="col-12 form-actions-mobile pt-2">
                         <button type="submit" class="btn btn-primary">Save</button>

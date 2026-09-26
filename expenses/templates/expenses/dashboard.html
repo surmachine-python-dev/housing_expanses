@@ -136,21 +136,18 @@
                 <h2 class="section-title mb-3">Add New Reading</h2>
                 <form method="post" class="row g-3">
                     {% csrf_token %}
+                    {% include 'expenses/_form_errors.html' with form=form %}
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.user.id_for_label }}">User</label>
-                        {{ form.user }}
+                        {% include 'expenses/_field.html' with field=form.user label='User' %}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.date.id_for_label }}">Date</label>
-                        {{ form.date }}
+                        {% include 'expenses/_field.html' with field=form.date label='Date' %}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.utility_type.id_for_label }}">Utility Type</label>
-                        {{ form.utility_type }}
+                        {% include 'expenses/_field.html' with field=form.utility_type label='Utility Type' %}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.reading_value.id_for_label }}">Reading Value</label>
-                        {{ form.reading_value }}
+                        {% include 'expenses/_field.html' with field=form.reading_value label='Reading Value' %}
                     </div>
                     <div class="col-12">
                         <button type="submit" name="reading_submit" class="btn btn-primary">Save</button>
@@ -212,21 +209,18 @@
                         <h3 class="section-title mb-3">Add New Rate</h3>
                         <form method="post" class="row g-3">
                             {% csrf_token %}
+                            {% include 'expenses/_form_errors.html' with form=fee_form %}
                             <div class="col-md-6">
-                                <label class="form-label" for="{{ fee_form.year.id_for_label }}">Year</label>
-                                {{ fee_form.year }}
+                                {% include 'expenses/_field.html' with field=fee_form.year label='Year' %}
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="{{ fee_form.fee_type.id_for_label }}">Type</label>
-                                {{ fee_form.fee_type }}
+                                {% include 'expenses/_field.html' with field=fee_form.fee_type label='Type' %}
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="{{ fee_form.quantity_included.id_for_label }}">Included Quantity</label>
-                                {{ fee_form.quantity_included }}
+                                {% include 'expenses/_field.html' with field=fee_form.quantity_included label='Included Quantity' %}
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label" for="{{ fee_form.unit_price.id_for_label }}">Unit Price</label>
-                                {{ fee_form.unit_price }}
+                                {% include 'expenses/_field.html' with field=fee_form.unit_price label='Unit Price' %}
                             </div>
                             <div class="col-12">
                                 <button type="submit" name="fee_submit" class="btn btn-primary">Add Rate</button>

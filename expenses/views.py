@@ -3,10 +3,10 @@ from django.urls import reverse
 from django.contrib import messages
 from .models import MeterReading, FeeRate
 from .forms import MeterReadingForm, FeeRateForm
-from django.db.models import F
-import json
 
 def dashboard(request):
+    active_tab = request.GET.get('tab', 'Charts')
+
     if request.method == 'POST':
         if 'reading_submit' in request.POST:
             form = MeterReadingForm(request.POST)
@@ -15,6 +15,8 @@ def dashboard(request):
                 form.save()
                 messages.success(request, 'Saved successfully!')
                 return redirect(f"{reverse('dashboard')}?tab=AddEntry")
+            messages.error(request, 'Reading was not saved. Please correct the errors below.')
+            active_tab = 'AddEntry'
         elif 'fee_submit' in request.POST:
             form = MeterReadingForm()
             fee_form = FeeRateForm(request.POST)
@@ -22,16 +24,14 @@ def dashboard(request):
                 fee_form.save()
                 messages.success(request, 'Fee rate saved successfully!')
                 return redirect(f"{reverse('dashboard')}?tab=Fees")
-            else:
-                messages.error(request, 'Error saving fee rate. ' + str(fee_form.errors))
+            messages.error(request, 'Fee rate was not saved. Please correct the errors below.')
+            active_tab = 'Fees'
         else:
             form = MeterReadingForm()
             fee_form = FeeRateForm()
     else:
         form = MeterReadingForm()
         fee_form = FeeRateForm()
-
-    active_tab = request.GET.get('tab', 'Charts')
 
     # For demonstration, fetch all readings. 
     # In a real app, you might filter by request.user

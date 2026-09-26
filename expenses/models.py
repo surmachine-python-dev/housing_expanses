@@ -16,6 +16,19 @@ class MeterReading(models.Model):
     
     class Meta:
         ordering = ['-date']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'date', 'utility_type'],
+                name='unique_reading_per_user_month_utility',
+                violation_error_message='A reading for this user, month and utility already exists.',
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        # Readings are monthly - always store them on the 1st day of the month
+        if self.date:
+            self.date = self.date.replace(day=1)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.username} - {self.utility_type} - {self.date}: {self.reading_value}"

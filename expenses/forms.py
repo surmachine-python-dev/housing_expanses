@@ -14,7 +14,12 @@ class MeterReadingForm(forms.ModelForm):
         self.fields['user'].widget.attrs.update({'class': 'form-select'})
         self.fields['date'].widget.attrs.update({'class': 'form-control'})
         self.fields['utility_type'].widget.attrs.update({'class': 'form-select'})
-        self.fields['reading_value'].widget.attrs.update({'class': 'form-control', 'step': '0.01'})
+        self.fields['reading_value'].widget.attrs.update({'class': 'form-control', 'step': '0.001'})
+
+    def clean_date(self):
+        # Normalize before unique validation so duplicates within a month are caught
+        date = self.cleaned_data['date']
+        return date.replace(day=1) if date else date
 
 class FeeRateForm(forms.ModelForm):
     class Meta:
@@ -25,6 +30,6 @@ class FeeRateForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['year'].widget.attrs.update({'class': 'form-control'})
         self.fields['fee_type'].widget.attrs.update({'class': 'form-select'})
-        self.fields['quantity_included'].widget.attrs.update({'class': 'form-control', 'step': '0.01'})
+        self.fields['quantity_included'].widget.attrs.update({'class': 'form-control', 'step': '0.001'})
         self.fields['unit_price'].widget.attrs.update({'class': 'form-control', 'step': '0.01'})
 

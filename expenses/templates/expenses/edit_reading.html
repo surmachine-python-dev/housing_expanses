@@ -10,21 +10,18 @@
                 <h2 class="section-title mb-3">Edit Reading</h2>
                 <form method="post" class="row g-3">
                     {% csrf_token %}
+                    {% include 'expenses/_form_errors.html' with form=form %}
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.user.id_for_label }}">User</label>
-                        {{ form.user }}
+                        {% include 'expenses/_field.html' with field=form.user label='User' %}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.date.id_for_label }}">Date</label>
-                        {{ form.date }}
+                        {% include 'expenses/_field.html' with field=form.date label='Date' %}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.utility_type.id_for_label }}">Utility Type</label>
-                        {{ form.utility_type }}
+                        {% include 'expenses/_field.html' with field=form.utility_type label='Utility Type' %}
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label" for="{{ form.reading_value.id_for_label }}">Reading Value</label>
-                        {{ form.reading_value }}
+                        {% include 'expenses/_field.html' with field=form.reading_value label='Reading Value' %}
                     </div>
                     <div class="col-12 form-actions-mobile pt-2">
                         <button type="submit" class="btn btn-primary">Update</button>
